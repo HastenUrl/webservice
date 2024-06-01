@@ -20,21 +20,14 @@ def read_root():
 
 @app.get("/kafka-test")
 def kafka_connection_test():
-    kfc = KafkaConnector()
-    kc = KafkaConsumer()
-    kfc.produce('test', "This is a sample message")
-
-    # consumer = kfc.__get_consumer('123', 'test')
-
-    print("Trial 1")
-    kfc.consume('123', 'test')
-
-    # print("Trial 2")
-    # kc.consume(consumer)
-
-    # producer = kfc.__get_producer()
-    
-    return {"message": "Done"}
+    try:
+        kfc = KafkaConnector()
+        kfc.produce('test', "This is a sample message")
+        if kfc.consume('123', 'test') == "This is a sample message":
+            return {"message": "Success"}
+    except Exception as e:
+        return {"message": str(e)}
+    return {"message": "Some error occured"}
 
 @app.get("/redis-test")
 def redis_connection_test(cache = Depends(get_redis)):
