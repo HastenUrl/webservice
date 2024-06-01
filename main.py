@@ -2,8 +2,8 @@ from typing import Annotated
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 
-from .config.redis import get_redis
-from .config.kafka import KafkaConnector, KafkaConsumer
+from .lib.redis import get_redis
+from .lib.kafka import get_kafka
 
 from .routes import users, urls
 
@@ -21,7 +21,7 @@ def read_root():
 @app.get("/kafka-test")
 def kafka_connection_test():
     try:
-        kfc = KafkaConnector()
+        kfc = get_kafka()
         kfc.produce('test', "This is a sample message")
         if kfc.consume('123', 'test') == "This is a sample message":
             return {"message": "Success"}
@@ -32,8 +32,8 @@ def kafka_connection_test():
 @app.get("/redis-test")
 def redis_connection_test(cache = Depends(get_redis)):
     try:
-        cache.set("connection", "stable")
-        return {"message": cache.get("connection")}
+        cache.send_message("connection", "stable")
+        return {"message": cache.get_message("connection")}
     except Exception as e:
         return {"message": str(e)}
     return {"message": "Not working"}
